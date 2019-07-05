@@ -15,6 +15,7 @@ class RepositoryCategorySerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'icon',
         ]
 
 
@@ -90,6 +91,7 @@ class RepositorySerializer(serializers.ModelSerializer):
             'description',
             'is_private',
             'available_languages',
+            'entities',
             'entities_list',
             'labels_list',
             'ready_for_train',
@@ -104,6 +106,7 @@ class RepositorySerializer(serializers.ModelSerializer):
             'labels',
             'other_label',
             'examples__count',
+            'evaluate_languages_count',
             'absolute_url',
             'authorization',
             'ready_for_train',
@@ -112,13 +115,17 @@ class RepositorySerializer(serializers.ModelSerializer):
             'request_authorization',
             'available_request_authorization',
             'languages_warnings',
+            'algorithm',
             'use_language_model_featurizer',
             'use_competing_intents',
+            'use_name_entities',
         ]
         read_only = [
             'uuid',
             'available_languages',
+            'entities',
             'entities_list',
+            'evaluate_languages_count',
             'labels_list',
             'ready_for_train',
             'created_at',
@@ -149,16 +156,21 @@ class RepositorySerializer(serializers.ModelSerializer):
         read_only=True)
     other_label = serializers.SerializerMethodField()
     examples__count = serializers.SerializerMethodField()
+    evaluate_languages_count = serializers.SerializerMethodField()
     absolute_url = serializers.SerializerMethodField()
     authorization = serializers.SerializerMethodField()
     request_authorization = serializers.SerializerMethodField()
     available_request_authorization = serializers.SerializerMethodField()
+    entities = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         validated_data.update({
             'owner': self.context['request'].user,
         })
         return super().create(validated_data)
+
+    def get_entities(self, obj):
+        return obj.current_entities.values('value', 'id').distinct()
 
     def get_intents(self, obj):
         return IntentSerializer(
@@ -183,6 +195,12 @@ class RepositorySerializer(serializers.ModelSerializer):
 
     def get_examples__count(self, obj):
         return obj.examples().count()
+
+    def get_evaluate_languages_count(self, obj):
+        return dict(map(
+            lambda x: (x, obj.evaluations(language=x).count()
+                       ), obj.available_languages
+        ))
 
     def get_absolute_url(self, obj):
         return obj.get_absolute_url()

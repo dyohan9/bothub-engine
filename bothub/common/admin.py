@@ -4,6 +4,7 @@ from django.shortcuts import reverse
 
 from bothub.common.models import Repository
 from bothub.common.models import RepositoryUpdate
+from bothub.common.models import RepositoryCategory
 
 
 class RepositoryUpdateInline(admin.TabularInline):
@@ -13,8 +14,9 @@ class RepositoryUpdateInline(admin.TabularInline):
 
     fields = [
         'language',
-        'use_language_model_featurizer',
+        'algorithm',
         'use_competing_intents',
+        'use_name_entities',
         'created_at',
         'by',
         'training_started_at',
@@ -56,4 +58,12 @@ class RepositoryAdmin(admin.ModelAdmin):
     ]
     inlines = [
         RepositoryUpdateInline,
+    ]
+
+
+@admin.register(RepositoryCategory)
+class RepositoryCategoryAdmin(admin.ModelAdmin):
+    list_display = [
+        '__str__',
+        'icon',
     ]

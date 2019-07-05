@@ -26,8 +26,9 @@ class NewRepositorySerializer(serializers.ModelSerializer):
             'name',
             'slug',
             'language',
-            'use_language_model_featurizer',
+            'algorithm',
             'use_competing_intents',
+            'use_name_entities',
             'categories',
             'description',
             'is_private',
@@ -64,8 +65,10 @@ class RepositorySerializer(serializers.ModelSerializer):
             'slug',
             'language',
             'available_languages',
+            'algorithm',
             'use_language_model_featurizer',
             'use_competing_intents',
+            'use_name_entities',
             'categories',
             'categories_list',
             'description',
@@ -92,6 +95,9 @@ class RepositorySerializer(serializers.ModelSerializer):
     owner__nickname = serializers.SlugRelatedField(
         source='owner',
         slug_field='nickname',
+        read_only=True)
+    categories = RepositoryCategorySerializer(
+        many=True,
         read_only=True)
     categories_list = serializers.SerializerMethodField()
     entities = serializers.SerializerMethodField()
@@ -178,6 +184,10 @@ class RepositoryAuthorizationSerializer(serializers.ModelSerializer):
 class AnalyzeTextSerializer(serializers.Serializer):
     language = serializers.ChoiceField(LANGUAGE_CHOICES, required=True)
     text = serializers.CharField(allow_blank=False)
+
+
+class EvaluateSerializer(serializers.Serializer):
+    language = serializers.ChoiceField(LANGUAGE_CHOICES, required=True)
 
 
 class VoteSerializer(serializers.ModelSerializer):
